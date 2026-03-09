@@ -1,4 +1,4 @@
- static bool asalMi(int sayi)
+ static bool AsalMi(int sayi)
  {
      if (sayi < 2) return false;
 
@@ -11,12 +11,12 @@
 
  static void Main(string[] args)
  {
-     Console.Write("Bir deger giriniz: ");
-     string sayi = Console.ReadLine();
+     Console.WriteLine("bir sayi giriniz");
+     string giris = Console.ReadLine();
 
-     if (!int.TryParse(sayi, out int n))
+     if (!int.TryParse(giris, out int n))
      {
-         Console.WriteLine("Hatalı değer girdiniz.");
+         Console.WriteLine("Hatalı giriş yaptınız");
          return;
      }
 
@@ -26,13 +26,11 @@
          return;
      }
 
-     for (int i = 2; i <= n; i++)
+     for (int sayi = 2; sayi <= n; sayi++)
      {
          if (AsalMi(sayi))
-             Console.Write(i);
+             Console.Write(sayi);
      }
 
      Console.ReadKey();
-
-
  }
