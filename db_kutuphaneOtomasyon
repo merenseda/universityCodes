@@ -1,0 +1,97 @@
+CREATE DATABASE IF NOT EXISTS db_kutuphaneOtomasyon
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_turkish_ci;
+
+USE db_kutuphaneOtomasyon;
+
+CREATE TABLE adresler (
+    adres_no    INT          PRIMARY KEY AUTO_INCREMENT,
+    sehir       VARCHAR(100) NOT NULL,
+    mahalle     VARCHAR(100),
+    bina_no     VARCHAR(10),
+    cadde       VARCHAR(150),
+    posta_kodu  VARCHAR(10),
+    ulke        VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE kutuphane (
+    kutuphane_no    INT          PRIMARY KEY AUTO_INCREMENT,
+    kutuphane_ismi  VARCHAR(200) NOT NULL,
+    aciklama        TEXT,
+    adres_no        INT          NOT NULL,
+    CONSTRAINT fk_kutuphane_adres
+        FOREIGN KEY (adres_no) REFERENCES adresler(adres_no)
+);
+
+CREATE TABLE uyeler (
+    uye_no      INT          PRIMARY KEY AUTO_INCREMENT,
+    uye_adi     VARCHAR(100) NOT NULL,
+    uye_soyadi  VARCHAR(100) NOT NULL,
+    cinsiyet    ENUM('E', 'K') NOT NULL,
+    telefon     VARCHAR(20),
+    eposta      VARCHAR(150),
+    adres_no    INT          NOT NULL,
+    CONSTRAINT fk_uyeler_adres
+        FOREIGN KEY (adres_no) REFERENCES adresler(adres_no)
+);
+
+CREATE TABLE yazarlar (
+    yazar_no     INT          PRIMARY KEY AUTO_INCREMENT,
+    yazar_adi    VARCHAR(100) NOT NULL,
+    yazar_soyadi VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE kategoriler (
+    kategori_no  INT          PRIMARY KEY AUTO_INCREMENT,
+    kategori_adi VARCHAR(150) NOT NULL
+);
+
+CREATE TABLE kitaplar (
+    isbn            VARCHAR(20)  PRIMARY KEY,
+    kitap_adi       VARCHAR(255) NOT NULL,
+    sayfa_sayisi    INT,
+    yayin_tarihi    DATE
+);
+
+CREATE TABLE kitap_yazar (
+    isbn        VARCHAR(20) NOT NULL,
+    yazar_no    INT         NOT NULL,
+    PRIMARY KEY (isbn, yazar_no),
+    CONSTRAINT fk_kitapyazar_kitap
+        FOREIGN KEY (isbn) REFERENCES kitaplar(isbn),
+    CONSTRAINT fk_kitapyazar_yazar
+        FOREIGN KEY (yazar_no) REFERENCES yazarlar(yazar_no)
+);
+
+CREATE TABLE kitap_kategori (
+    isbn         VARCHAR(20) NOT NULL,
+    kategori_no  INT         NOT NULL,
+    PRIMARY KEY (isbn, kategori_no),
+    CONSTRAINT fk_kitapkategori_kitap
+        FOREIGN KEY (isbn) REFERENCES kitaplar(isbn),
+    CONSTRAINT fk_kitapkategori_kategori
+        FOREIGN KEY (kategori_no) REFERENCES kategoriler(kategori_no)
+);
+
+CREATE TABLE kutuphane_kitap (
+    kutuphane_no  INT         NOT NULL,
+    isbn          VARCHAR(20) NOT NULL,
+    miktar        INT         NOT NULL DEFAULT 1,
+    PRIMARY KEY (kutuphane_no, isbn),
+    CONSTRAINT fk_kutuphanekitap_kutuphane
+        FOREIGN KEY (kutuphane_no) REFERENCES kutuphane(kutuphane_no),
+    CONSTRAINT fk_kutuphanekitap_kitap
+        FOREIGN KEY (isbn) REFERENCES kitaplar(isbn)
+);
+
+CREATE TABLE emanet (
+    emanet_no       INT         PRIMARY KEY AUTO_INCREMENT,
+    uye_no          INT         NOT NULL,
+    isbn            VARCHAR(20) NOT NULL,
+    emanet_tarihi   DATE        NOT NULL,
+    teslim_tarihi   DATE,
+    CONSTRAINT fk_emanet_uye
+        FOREIGN KEY (uye_no) REFERENCES uyeler(uye_no),
+    CONSTRAINT fk_emanet_kitap
+        FOREIGN KEY (isbn) REFERENCES kitaplar(isbn)
+);
