@@ -1,0 +1,26 @@
+ public class ogrenci
+ {
+     private string isim;
+
+     public void setIsim(string yeniIsim)
+     {
+         this.isim = yeniIsim;
+     }
+
+     public string getIsim()
+     {
+         return isim;
+     }
+ }
+
+ internal class Program
+ {
+     static void Main(string[] args)
+     {
+         ogrenci ogrenci1 = new ogrenci();
+         ogrenci1.setIsim("Meren");
+         Console.WriteLine(ogrenci1.getIsim());
+         Console.ReadKey();
+
+     }
+ }
