@@ -1,0 +1,29 @@
+public class ogrenci
+{
+    int ogrenciNo;
+    string ogrenciAd, ogrenciSoyad;
+
+    public void ogrenciBilgisi(int no, string ad, string soyad)
+    {
+        this.ogrenciNo = no;
+        this.ogrenciAd = ad;
+        this.ogrenciSoyad = soyad;
+
+    }
+
+    public void ogrenciCagir()
+    {
+        Console.WriteLine($"Öğrenci No: { this.ogrenciNo}\nÖğrenci Adı: {this.ogrenciAd}\nÖğrenci Soyadı: {this.ogrenciSoyad} ");
+    }
+}
+
+internal class Program
+{
+    static void Main(string[] args)
+    {
+        ogrenci ogrenci1 = new ogrenci();
+        ogrenci1.ogrenciBilgisi(1,"Meren", "Seda");
+        ogrenci1.ogrenciCagir();
+        Console.ReadKey();
+    }
+}
