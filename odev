@@ -1,0 +1,160 @@
+-- ============================================================
+-- Kayseri Üniversitesi - Meslek Yüksek Okulu
+-- Bilgisayar Teknolojileri Bölümü
+-- Veri Tabanı Yönetim Sistemleri Dersi
+-- Birden Fazla Tablo Üzerinde Sorgulama - Alıştırmalar
+-- ============================================================
+
+
+-- ------------------------------------------------------------
+-- TABLO OLUŞTURMA
+-- ------------------------------------------------------------
+
+CREATE TABLE Musteri (
+    Mno      INT PRIMARY KEY,
+    Madi     VARCHAR(50),
+    Msoyadi  VARCHAR(50),
+    Madres   VARCHAR(100),
+    Mtelefon VARCHAR(20)
+);
+
+CREATE TABLE Arac (
+    Aracno INT PRIMARY KEY,
+    Model  INT,
+    Marka  VARCHAR(50),
+    Plaka  VARCHAR(20),
+    Fiyat  DECIMAL(10, 2)
+);
+
+CREATE TABLE Satis (
+    Satno     INT PRIMARY KEY,
+    Mno       INT,
+    Aracno    INT,
+    Sat_tarih DATE,
+    Sfiyat    DECIMAL(10, 2),
+    FOREIGN KEY (Mno)    REFERENCES Musteri(Mno),
+    FOREIGN KEY (Aracno) REFERENCES Arac(Aracno)
+);
+
+CREATE TABLE Alim (
+    Alimno     INT PRIMARY KEY,
+    Mno        INT,
+    Aracno     INT,
+    Alim_tarih DATE,
+    Afiyat     DECIMAL(10, 2),
+    FOREIGN KEY (Mno)    REFERENCES Musteri(Mno),
+    FOREIGN KEY (Aracno) REFERENCES Arac(Aracno)
+);
+
+
+-- ------------------------------------------------------------
+-- ÖRNEK VERİLER
+-- ------------------------------------------------------------
+
+INSERT INTO Musteri VALUES
+(1, 'Turgut',  'Özseven',  'Turhal/Tokat',       '121646516416'),
+(2, 'Mustafa', 'Çağlayan', 'Meram/Konya',         '465245212323'),
+(3, 'Ahmet',   'Kara',     'Zile/Tokat',          '472376298362'),
+(4, 'Murat',   'Beyaz',    'Turhal/Tokat',        '385235293859'),
+(5, 'Elif',    'Kurt',     'Beşiktaş/İstanbul',   '948752835293'),
+(6, 'Ayşe',    'Uçar',     'Taşova/Amasya',       '487394698292'),
+(7, 'Bülent',  'Ayar',     'Turhal/Tokat',        '232378572352');
+
+INSERT INTO Arac VALUES
+(1, 2004, 'Fiat Marea',      '38 VTYS 3838', 100000),
+(2, 2020, 'Renault Megane',  '38 VTYS 3839', 110000),
+(3, 2010, 'Ford Focus',      '38 VTYS 3840', 120000),
+(4, 2023, 'Volkswagen Golf', '38 VTYS 3841', 250000),
+(5, 2000, 'Opel Astra',      '38 VTYS 3842',  82000);
+
+INSERT INTO Satis VALUES
+(1, 1, 1, '2022-05-04', 170000),
+(2, 4, 5, '2020-06-01', 115000),
+(3, 7, 4, '2023-06-15', 270000),
+(4, 2, 1, '2010-07-02',  17500);
+
+INSERT INTO Alim VALUES
+(1, 3, 1, '2022-05-04', 190000),
+(2, 6, 1, '2020-06-01', 525000),
+(3, 2, 5, '2023-06-15', 370000),
+(4, 1, 2, '2010-07-02',  17500),
+(5, 5, 3, '2021-08-22', 156800);
+
+
+-- ------------------------------------------------------------
+-- SORGULAR
+-- ------------------------------------------------------------
+
+-- 1. Satış yapılan müşterilerin isimlerini listele
+SELECT DISTINCT Musteri.Madi, Musteri.Msoyadi
+FROM Musteri
+INNER JOIN Satis ON Musteri.Mno = Satis.Mno;
+
+
+-- 2. Hangi müşteriden hangi aracın alındığını listele
+SELECT Musteri.Madi, Musteri.Msoyadi, Arac.Marka, Arac.Model
+FROM Alim
+INNER JOIN Musteri ON Alim.Mno = Musteri.Mno
+INNER JOIN Arac ON Alim.Aracno = Arac.Aracno;
+
+
+-- 3. Her bir müşteriden alınan araçların sayısını listele
+SELECT Musteri.Madi, Musteri.Msoyadi, COUNT(Alim.Alimno) AS AracSayisi
+FROM Alim
+INNER JOIN Musteri ON Alim.Mno = Musteri.Mno
+GROUP BY Musteri.Mno, Musteri.Madi, Musteri.Msoyadi;
+
+
+-- 4. Satılan araçların marka ve modelini bul
+SELECT Arac.Marka, Arac.Model
+FROM Satis
+INNER JOIN Arac ON Satis.Aracno = Arac.Aracno;
+
+
+-- 5. Toplam satış ve toplam alım tutarları ile farkını bul
+SELECT
+    SUM(Satis.Sfiyat)                      AS ToplamSatis,
+    SUM(Alim.Afiyat)                       AS ToplamAlim,
+    SUM(Alim.Afiyat) - SUM(Satis.Sfiyat)  AS Fark
+FROM Satis, Alim;
+
+
+-- 6. Hiç satışı yapılmamış araçları listele
+SELECT Arac.Aracno, Arac.Marka, Arac.Model
+FROM Arac
+WHERE Arac.Aracno NOT IN (SELECT Satis.Aracno FROM Satis);
+
+
+-- 7. Her aracın ortalama satış tutarını bul
+SELECT Arac.Marka, Arac.Model, AVG(Satis.Sfiyat) AS OrtSatisFiyati
+FROM Satis
+INNER JOIN Arac ON Satis.Aracno = Arac.Aracno
+GROUP BY Arac.Aracno, Arac.Marka, Arac.Model;
+
+
+-- 8. Alımı ve satışı yapılan tüm araçların marka, model ve alım-satış sayısını listele
+SELECT
+    Arac.Marka,
+    Arac.Model,
+    COUNT(DISTINCT Alim.Alimno) AS AlimSayisi,
+    COUNT(DISTINCT Satis.Satno) AS SatisSayisi
+FROM Arac
+INNER JOIN Alim  ON Arac.Aracno = Alim.Aracno
+INNER JOIN Satis ON Arac.Aracno = Satis.Aracno
+GROUP BY Arac.Aracno, Arac.Marka, Arac.Model;
+
+
+-- 9. 20000'den fazla tutara satılan araçları kimlerin hangi aracı aldığını bul
+SELECT Musteri.Madi, Musteri.Msoyadi, Arac.Marka, Arac.Model, Satis.Sfiyat
+FROM Satis
+INNER JOIN Musteri ON Satis.Mno = Musteri.Mno
+INNER JOIN Arac    ON Satis.Aracno = Arac.Aracno
+WHERE Satis.Sfiyat > 20000;
+
+
+-- 10. Tokatta bulunan müşterilere satışı yapılan araçları listele
+SELECT Musteri.Madi, Musteri.Msoyadi, Arac.Marka, Arac.Model
+FROM Satis
+INNER JOIN Musteri ON Satis.Mno = Musteri.Mno
+INNER JOIN Arac    ON Satis.Aracno = Arac.Aracno
+WHERE Musteri.Madres LIKE '%Tokat%';
